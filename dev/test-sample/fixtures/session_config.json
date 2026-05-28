@@ -1,0 +1,36 @@
+{
+  "name": "代码审查工作流",
+  "permissions": {
+    "mode": "whitelist",
+    "operations": {
+      "chat": "allowed",
+      "analyze": "allowed",
+      "search": "allowed",
+      "execute_code": "require_approval",
+      "http_request": "require_approval",
+      "file_read": "allowed",
+      "file_write": "require_approval",
+      "file_delete": "denied"
+    }
+  },
+  "agents": [
+    {
+      "name": "architect",
+      "provider": "claude",
+      "model": "claude-sonnet",
+      "role": "架构师"
+    },
+    {
+      "name": "reviewer",
+      "provider": "deepseek",
+      "model": "deepseek-chat",
+      "role": "审查者"
+    },
+    {
+      "name": "programmer",
+      "provider": "claude",
+      "model": "claude-opus",
+      "role": "程序员"
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/css/animal-island.css">
+    <title>Blackboard — Create Session</title>
+    <style>
+        body { margin: 0; background: var(--animal-bg-color); font-family: var(--animal-font-family); }
+        .header { background: var(--animal-primary-color); padding: 16px 32px; color: #fff; display: flex; align-items: center; }
+        .header a { color: #fff; text-decoration: none; margin-right: 16px; font-weight: 600; }
+        .header h1 { margin: 0; font-size: 24px; color: #fff; }
+        .container { max-width: 700px; margin: 32px auto; padding: 0 24px; }
+        .form-card { background: #f7f3df; border-radius: 20px; padding: 32px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 700; color: #725d42; margin-bottom: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px 16px; border: 2px solid var(--animal-border-color); border-radius: 18px; font-size: 14px; background: #f8f8f0; color: var(--animal-text-color); box-sizing: border-box; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--animal-primary-color); outline: none; }
+        .agent-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; flex-wrap: wrap; }
+        .agent-row input, .agent-row select { flex: 1; min-width: 120px; position: relative; z-index: 1; }
+        .agent-row .rm-btn { background: none; border: none; color: #c9a8a8; cursor: pointer; padding: 2px; display: flex; align-items: center; }
+        .agent-row .rm-btn img { width: 18px; height: 18px; }
+        .agent-row .rm-btn:hover { color: #e05a5a; }
+        .add-agent-btn { background: none; border: 2px dashed var(--animal-border-color); color: var(--animal-text-color-secondary); padding: 8px 16px; border-radius: 18px; cursor: pointer; font-size: 13px; margin-top: 8px; }
+        .add-agent-btn:hover { border-color: var(--animal-primary-color); color: var(--animal-primary-color); }
+        .submit-btn { background: #f8f8f0; border: 2px solid var(--animal-primary-color); color: var(--animal-primary-color); padding: 12px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; cursor: pointer; width: 100%; margin-top: 24px; }
+        .submit-btn:hover { transform: translateY(-1px); }
+        .permission-select { margin-top: 12px; }
+        .msg { padding: 12px 16px; border-radius: 18px; margin-top: 16px; text-align: center; font-weight: 600; }
+        .msg-success { background: #e6f9f6; color: #19c8b9; }
+        .msg-error { background: #fce8e8; color: #e05a5a; }
+        .quick-help { font-size: 12px; color: var(--animal-text-color-secondary); margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header" style="justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:24px;">
+            <a href="/" style="display:inline-flex;align-items:center;gap:4px;"><img src="/static/icons/arrow_back.svg" width="18" height="18" style="filter:brightness(0) invert(1);vertical-align:middle;"> Dashboard</a>
+            <h1>Create New Session</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <form id="create-form">
+                <div class="form-group">
+                    <label>Session Name</label>
+                    <input type="text" id="session_name" placeholder="My Session" required oninput="autoSessionId()">
+                    <div class="quick-help" id="session-id-preview">A human-readable name. Session ID will be auto-generated.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Permission Mode</label>
+                    <select id="perm-mode">
+                        <option value="whitelist">Whitelist (白名单)</option>
+                        <option value="approval_first">Approval First (审批优先)</option>
+                        <option value="open">Open (全开放)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Agents</label>
+                    <div class="quick-help" style="margin-bottom:8px;">Name → Instance → Model → Role</div>
+                    <div id="agent-list"></div>
+                    <button type="button" class="add-agent-btn" onclick="addAgent()">+ Add Agent</button>
+                </div>
+
+                <button type="submit" class="submit-btn">Create Session</button>
+            </form>
+            <div id="msg"></div>
+        </div>
+    </div>
+
+    <script>
+        let agentConfig = {};
+        let credentialModels = {};
+
+        async function loadAgentConfig() {
+            try {
+                const [ar, cr] = await Promise.all([
+                    fetch("/api/config/agents"),
+                    fetch("/api/config/credentials"),
+                ]);
+                const ad = await ar.json();
+                const cd = await cr.json();
+                agentConfig = ad.agents || {};
+                // credentialModels keyed by instance name (ADR-013)
+                const creds = cd.credentials || {};
+                for (const [instanceName, cred] of Object.entries(creds)) {
+                    if (cred.models && cred.models.length > 0) {
+                        credentialModels[instanceName] = {models: cred.models, default_model: cred.default_model};
+                    }
+                }
+                addAgent();
+            } catch(e) {
+                agentConfig = {};
+                credentialModels = {};
+                addAgent();
+            }
+        }
+
+        // Look up models by instance name (ADR-013: all credential data keyed by instance name)
+        function getModelsForInstance(instanceKey) {
+            const cModels = credentialModels[instanceKey]?.models || [];
+            if (cModels.length > 0) return {models: cModels, defaultModel: credentialModels[instanceKey].default_model};
+            const regEntry = agentConfig[instanceKey];
+            if (!regEntry) return {models: [], defaultModel: ""};
+            return {models: regEntry.models || [], defaultModel: regEntry.default_model || ""};
+        }
+
+        function buildModelOptions(instanceKey, selectedModel) {
+            const {models, defaultModel} = getModelsForInstance(instanceKey);
+            if (models.length) {
+                return models.map(m => {
+                    const mid = typeof m === "string" ? m : m.model_id;
+                    const selected = mid === selectedModel ? "selected" : "";
+                    return `<option value="${mid}" ${selected}>${mid}</option>`;
+                }).join("");
+            }
+            return defaultModel
+                ? `<option value="">default: ${defaultModel}</option>`
+                : '<option value="">(auto)</option>';
+        }
+
+        function agentRow(instanceKey, agentName, role, model) {
+            // Instance dropdown: value = registry key (for credential lookup)
+            const instances = Object.keys(agentConfig);
+            let instanceOpts = '<option value="">\u2014 Select \u2014</option>';
+            if (instances.length) {
+                instanceOpts += instances.map(k =>
+                    `<option value="${k}" ${k===instanceKey?'selected':''}>${agentConfig[k]?.display_name || k}</option>`
+                ).join("");
+            }
+
+            const modelOpts = instanceKey ? buildModelOptions(instanceKey, model) : '<option value="">(auto)</option>';
+            const nameVal = agentName || instanceKey || "";
+
+            return `
+                <div class="agent-row">
+                    <input type="text" class="agent-session-name" placeholder="Name in session" value="${nameVal}" title="Agent's name within this session">
+                    <select class="agent-instance" onchange="syncInstanceName(this)" title="Registry instance (for credentials)">${instanceOpts}</select>
+                    <select class="agent-model">${modelOpts}</select>
+                    <input type="text" placeholder="Role" class="agent-role" value="${role||''}">
+                    <button type="button" class="rm-btn" onclick="this.parentElement.remove()" title="Remove"><img src="/static/icons/close.svg" alt="remove"></button>
+                </div>`;
+        }
+
+        function addAgent() {
+            const list = document.getElementById("agent-list");
+            const firstKey = Object.keys(agentConfig)[0] || "";
+            list.insertAdjacentHTML("beforeend", agentRow(firstKey, firstKey, "", ""));
+        }
+
+        function syncInstanceName(selectEl) {
+            const instanceKey = selectEl.value;
+            const row = selectEl.parentElement;
+            // Auto-fill name only if user hasn't typed a custom value yet
+            const nameInput = row.querySelector(".agent-session-name");
+            if (nameInput && (!nameInput.value.trim() || nameInput.dataset.autoFilled === "1")) {
+                nameInput.value = instanceKey;
+                nameInput.dataset.autoFilled = "1";
+            }
+            const modelSelect = row.querySelector(".agent-model");
+            modelSelect.innerHTML = instanceKey
+                ? buildModelOptions(instanceKey, "")
+                : '<option value="">(auto)</option>';
+        }
+
+        function generateSessionId() {
+            const name = document.getElementById("session_name").value.trim();
+            return name.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 60) || 'session-' + Date.now().toString(36);
+        }
+
+        function autoSessionId() {
+            const id = generateSessionId();
+            const preview = document.getElementById("session-id-preview");
+            if (preview) preview.textContent = id ? `Session ID: ${id}` : "A human-readable name. Session ID will be auto-generated.";
+        }
+
+        document.getElementById("create-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const sessionId = generateSessionId();
+            const sessionName = document.getElementById("session_name").value.trim();
+            const mode = document.getElementById("perm-mode").value;
+            const rows = document.querySelectorAll(".agent-row");
+
+            // registry_key = instance key for credential lookup (ADR-013)
+            // name        = agent's identity within this session (can differ from registry_key)
+            // provider    = actual LLM provider slug (for adapter / base_url selection)
+            const agents = Array.from(rows).map(r => {
+                const instanceKey = r.querySelector(".agent-instance").value;
+                if (!instanceKey) return null;
+                const cfg = agentConfig[instanceKey] || {};
+                const name = r.querySelector(".agent-session-name").value.trim() || instanceKey;
+                return {
+                    name: name,
+                    registry_key: instanceKey,
+                    provider: cfg.provider || instanceKey,
+                    role: r.querySelector(".agent-role").value.trim() || name,
+                    model: r.querySelector(".agent-model").value || null,
+                };
+            }).filter(Boolean);
+
+            if (!sessionId || !sessionName) { alert("Session Name is required"); return; }
+            if (agents.length === 0) { alert("At least one Agent is required"); return; }
+
+            const resp = await fetch("/api/sessions", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    session_name: sessionName,
+                    agents: agents,
+                    permissions: { mode: mode }
+                })
+            });
+
+            const msg = document.getElementById("msg");
+            if (resp.ok) {
+                msg.className = "msg msg-success";
+                msg.textContent = "Session created! Redirecting...";
+                setTimeout(() => window.location.href = `/sessions/${sessionId}`, 800);
+            } else {
+                const err = await resp.json();
+                msg.className = "msg msg-error";
+                msg.textContent = err.detail || "Failed to create session";
+            }
+        });
+
+        loadAgentConfig();
+    </script>
+</body>
+</html>

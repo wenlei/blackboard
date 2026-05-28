@@ -1,0 +1,18 @@
+redis:
+  url: redis://localhost:6379
+  max_connections: 100
+  stream_maxlen: 10000
+data:
+  dir: /data/sessions
+  warning_threshold_gb: 10
+  remote_default:
+    type: local_nas
+    path: /mnt/nas/blackboard/
+session:
+  approval_timeout_seconds: 300
+  max_retries: 3
+  retry_backoff_base: 1
+logging:
+  level: INFO
+  format: '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+config_agent: config_agent

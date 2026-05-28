@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/css/animal-island.css">
+    <title>Blackboard — Configuration</title>
+    <style>
+        body { margin: 0; background: var(--animal-bg-color); font-family: var(--animal-font-family); }
+        .header { background: var(--animal-primary-color); padding: 16px 32px; color: #fff; display: flex; align-items: center; gap: 24px; }
+        .header a { color: #fff; text-decoration: none; font-weight: 600; }
+        .header h1 { margin: 0; font-size: 24px; color: #fff; }
+        .container { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
+        .tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--animal-border-color-light); }
+        .tab { padding: 10px 24px; cursor: pointer; font-weight: 600; color: var(--animal-text-color-secondary); border-bottom: 3px solid transparent; background: none; border-left: none; border-right: none; border-top: none; font-size: 14px; }
+        .tab.active { color: var(--animal-primary-color); border-bottom-color: var(--animal-primary-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card { background: #f7f3df; border-radius: 20px; padding: 24px; margin-bottom: 24px; }
+        .card h3 { margin: 0 0 16px; color: #725d42; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 10px 12px; background: #f0e8d8; color: #725d42; font-weight: 700; border-bottom: 2px solid var(--animal-border-color); }
+        td { padding: 10px 12px; border-bottom: 1px solid #e8e2d6; color: var(--animal-text-color); }
+        td code { background: #f0e8d8; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+        .btn { padding: 6px 16px; border-radius: 50px; font-weight: 600; font-size: 12px; cursor: pointer; border: none; }
+        .btn-primary { background: var(--animal-primary-color); color: #fff; }
+        .btn-danger { background: #e05a5a; color: #fff; }
+        .btn-ghost { background: none; border: 1px solid var(--animal-border-color); color: var(--animal-text-color); }
+        .btn-test { background: none; border: 1px solid var(--animal-primary-color); color: var(--animal-primary-color); }
+        .btn-test:hover { background: var(--animal-primary-color); color: #fff; }
+        .btn-sync { background: none; border: 1px solid #8b7e6a; color: #8b7e6a; }
+        .btn-sync:hover { background: #8b7e6a; color: #fff; }
+        .btn-danger { background: none; border: 1px solid #c45c5c; color: #c45c5c; }
+        .btn-danger:hover { background: #c45c5c; color: #fff; }
+        .btn-sm { padding: 4px 12px; font-size: 11px; }
+        .actions { display: flex; gap: 6px; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(61,52,40,.4); z-index: 100; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 40px 0; box-sizing: border-box; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #fff; border-radius: 20px; padding: 28px; max-width: 600px; width: 90%; }
+        .modal h3 { margin: 0 0 16px; color: #725d42; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-weight: 600; color: #725d42; margin-bottom: 4px; font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; border: 2px solid var(--animal-border-color); border-radius: 12px; font-size: 13px; background: #f8f8f0; box-sizing: border-box; }
+        .form-group textarea { font-family: monospace; font-size: 12px; resize: vertical; }
+        .modal-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+        .empty { text-align: center; padding: 32px; color: var(--animal-text-color-secondary); font-size: 14px; }
+        .tag { display: inline-block; background: var(--animal-primary-color-bg); color: var(--animal-primary-color); padding: 2px 8px; border-radius: 8px; font-size: 11px; margin: 1px; }
+        .msg { padding: 10px 14px; border-radius: 12px; margin-top: 12px; font-size: 13px; font-weight: 600; display: none; white-space: pre-line; line-height: 1.6; }
+        .msg-success { background: #e6f9f6; color: #19c8b9; display: block; }
+        .msg-error { background: #fce8e8; color: #e05a5a; display: block; }
+        .msg-info { background: #e8f0fe; color: #4a7fc1; display: block; }
+        .apikey-wrap { display: flex; align-items: center; gap: 4px; }
+        .apikey-wrap input { flex: 1; }
+        .apikey-wrap input:disabled { background: #f0ece0; color: #999; cursor: not-allowed; }
+        .icon-btn { width: 28px; height: 28px; border: none; background: none; cursor: pointer; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--animal-text-color-secondary); padding: 4px; vertical-align: middle; }
+        .icon-btn:hover { background: #f0e8d8; color: var(--animal-primary-color); }
+        .icon-btn.toggled { color: var(--animal-primary-color); }
+        .icon-btn img { width: 18px; height: 18px; }
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+        .dropdown-wrap { }
+        .dropdown-trigger { width: 100%; padding: 8px 12px; border: 2px solid var(--animal-border-color); border-radius: 12px; font-size: 13px; background: #f8f8f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .dropdown-trigger:hover { border-color: var(--animal-primary-color); }
+        .dropdown-trigger::after { content: "▼"; font-size: 10px; color: var(--animal-text-color-secondary); }
+        .dropdown-menu { display: none; width: 100%; margin-top: 4px; background: #fff; border: 2px solid var(--animal-border-color); border-radius: 12px; max-height: 240px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .dropdown-menu.show { display: block; }
+        .dropdown-item { padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f0e8d8; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: #f0e8d8; }
+        .dropdown-item.selected { background: #e6f9f6; font-weight: 600; color: var(--animal-primary-color); }
+        .provider-option { display: flex; align-items: center; gap: 8px; flex: 1; }
+        .provider-option .p-name { font-weight: 600; }
+        .provider-option .p-meta { font-size: 11px; color: var(--animal-text-color-secondary); }
+        .model-option-row { display: flex; align-items: center; justify-content: space-between; }
+        .dropdown-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f0e8d8; }
+        .pin-btn { background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 14px; opacity: 0.3; transition: opacity 0.15s; }
+        .pin-btn:hover { opacity: 1; background: #f0e8d8; }
+        .pin-btn.pinned { opacity: 1; }
+        .model-option-row .m-id { font-family: monospace; font-size: 12px; }
+        .model-option-row .m-badges { display: flex; gap: 4px; }
+        .model-type-badge { display: inline-block; padding: 1px 6px; border-radius: 6px; font-size: 10px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/" style="display:inline-flex;align-items:center;gap:4px;"><img src="/static/icons/arrow_back.svg" width="18" height="18" style="filter:brightness(0) invert(1);vertical-align:middle;"> Dashboard</a>
+        <h1>Configuration</h1>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('agents')">Agent Registry</button>
+            <button class="tab" onclick="switchTab('templates')">Strategy Templates</button>
+            <button class="tab" onclick="switchTab('permissions')">Permissions</button>
+            <button class="tab" onclick="switchTab('tools')">Loaded Tools</button>
+        </div>
+
+        <!-- Agents Tab -->
+        <div class="tab-content active" id="tab-agents">
+            <div class="card" id="system-settings-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <h3 style="margin:0;">System Settings</h3>
+                    <button class="btn btn-primary btn-sm" onclick="saveConfigAgent()">Save</button>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Config Agent <span style="font-weight:400;color:var(--animal-text-color-secondary);font-size:11px;">（可选，辅助推断其他 Provider 的 base_url）</span></label>
+                    <select id="config-agent-select" style="width:100%;padding:8px 12px;border:2px solid var(--animal-border-color);border-radius:12px;font-size:13px;background:#f8f8f0;box-sizing:border-box;">
+                        <option value="">（不使用 Config Agent）</option>
+                    </select>
+                </div>
+                <div id="settings-msg" class="msg"></div>
+            </div>
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3>Registered Agents</h3>
+                    <button class="btn btn-primary" onclick="openAgentModal()">+ Add Agent</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>实例名</th><th>Provider</th><th>Default Model</th><th>Status</th><th></th></tr>
+                        </thead>
+                        <tbody id="agents-tbody"><tr><td colspan="4" class="empty">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+                <div id="agents-msg" class="msg"></div>
+            </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div class="tab-content" id="tab-templates">
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3>Strategy Templates</h3>
+                    <button class="btn btn-primary" onclick="openTemplateModal()">+ Add Template</button>
+                </div>
+                <div id="templates-list"></div>
+                <div id="templates-msg" class="msg"></div>
+            </div>
+        </div>
+
+        <!-- Permissions Tab -->
+        <div class="tab-content" id="tab-permissions">
+            <div class="card">
+                <h3>Permission Presets</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Preset</th><th>Description</th><th>chat</th><th>analyze</th><th>search</th><th>exec_code</th><th>http</th><th>file_read</th><th>file_write</th><th>file_delete</th></tr>
+                        </thead>
+                        <tbody id="perms-tbody"><tr><td colspan="10" class="empty">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loaded Tools Tab -->
+        <div class="tab-content" id="tab-tools">
+            <div class="card">
+                <h3>Loaded Tools</h3>
+                <div id="tools-list"></div>
+                <div id="tools-msg" class="msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Modal -->
+    <div class="modal-overlay" id="agent-modal">
+        <div class="modal">
+            <h3 id="agent-modal-title">Add Agent</h3>
+            <input type="hidden" id="agent-edit-key">
+            <input type="hidden" id="agent-selected-provider" value="">
+            <input type="hidden" id="agent-selected-model" value="">
+
+            <div class="form-group">
+                <label>Provider</label>
+                <!-- Add mode: interactive dropdown -->
+                <div class="dropdown-wrap" id="provider-dropdown-wrap">
+                    <div class="dropdown-trigger" id="provider-dropdown-trigger" onclick="toggleProviderDropdown()">
+                        <span id="provider-dropdown-label">Select a provider...</span>
+                    </div>
+                    <div class="dropdown-menu" id="provider-dropdown-menu"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>实例名 <span style="font-weight:400;color:var(--animal-text-color-secondary);font-size:11px;">（唯一标识，同一 Provider 可创建多个）</span></label>
+                <input type="text" id="agent-display" placeholder="例：deepseek-coder、my-ds-v3">
+            </div>
+
+            <div class="form-group" id="modal-apikey-group">
+                <label>API Key</label>
+                <div class="apikey-wrap">
+                    <input type="password" id="modal-apikey" placeholder="sk-..." disabled>
+                    <button type="button" class="icon-btn" id="modal-apikey-lock" onclick="toggleModalKeyLock()" title="Lock/Unlock"><img src="/static/icons/lock.svg" alt="locked"></button>
+                    <button type="button" class="icon-btn" id="modal-apikey-eye" onclick="toggleModalKeyVisible()" title="Show/Hide"><img src="/static/icons/visibility_off.svg" alt="hidden"></button>
+                </div>
+            </div>
+
+            <div class="form-group" id="modal-model-group">
+                <label>Default Model</label>
+                <div class="dropdown-wrap">
+                    <div class="dropdown-trigger" id="model-dropdown-trigger" onclick="toggleModelDropdown()">
+                        <span id="model-dropdown-label">Select a model...</span>
+                    </div>
+                    <div class="dropdown-menu" id="model-dropdown-menu"></div>
+                </div>
+                <div class="quick-help" style="font-size:11px;color:var(--animal-text-color-secondary);margin-top:4px;">Synced models shown first, then static fallback list.</div>
+            </div>
+
+            <div class="form-group">
+                <details id="advanced-settings-details">
+                    <summary style="cursor:pointer;font-weight:600;color:var(--animal-text-color-secondary);font-size:13px;">Advanced Settings</summary>
+                    <div style="margin-top:8px;">
+                        <label style="font-size:12px;color:var(--animal-text-color-secondary);">Base URL</label>
+                        <input type="text" id="agent-baseurl" placeholder="Auto-filled from provider catalog" style="width:100%;padding:8px 12px;border:2px solid var(--animal-border-color);border-radius:12px;font-size:13px;background:#f8f8f0;box-sizing:border-box;">
+                        <div style="display:flex;gap:6px;margin-top:4px;align-items:center;flex-wrap:wrap;">
+                            <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-baseurl" onclick="resetBaseUrl()" style="display:none;">Reset to default</button>
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="var e=document.getElementById('agent-baseurl');e.value='';e.focus()">Clear</button>
+                            <span id="baseurl-default-hint" style="font-size:11px;color:var(--animal-text-color-secondary);"></span>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;" id="modal-test-sync">
+                <button class="btn btn-test btn-sm" id="modal-btn-test" onclick="testAgentConnection()">Test Connection</button>
+                <button class="btn btn-ghost btn-sm" id="modal-btn-ask-agent" onclick="askConfigAgent()" style="display:none;" title="让 Config Agent 推断 base_url">Ask Config Agent</button>
+                <button class="btn btn-ghost btn-sm" id="modal-btn-discover" onclick="discoverOllamaModels()" style="display:none;" title="从本地 Ollama 发现已安装模型">Discover Local Models</button>
+            </div>
+            <div id="modal-msg" class="msg"></div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeAgentModal()">Cancel</button>
+                <button class="btn btn-primary" id="agent-save-btn" onclick="saveAgent()">Save</button>
+            </div>
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid #f0e8d8;font-size:11px;color:#b09070;display:flex;flex-direction:column;gap:10px;">
+
+                <div>
+                    <div style="font-weight:700;color:#8a6d4a;margin-bottom:5px;">模型类型</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+                        <span style="background:#6fba2c;color:#fff;padding:1px 7px;border-radius:6px;font-size:10px;font-weight:600;">chat</span>
+                        <span style="background:#e05a5a;color:#fff;padding:1px 7px;border-radius:6px;font-size:10px;font-weight:600;">reasoning</span>
+                        <span style="background:#3b82f6;color:#fff;padding:1px 7px;border-radius:6px;font-size:10px;font-weight:600;">embedding</span>
+                        <span style="background:#a855f7;color:#fff;padding:1px 7px;border-radius:6px;font-size:10px;font-weight:600;">vision</span>
+                        <span style="color:#b09070;">从 OpenRouter 目录获取</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="font-weight:700;color:#8a6d4a;margin-bottom:5px;">Agent 状态</div>
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                        <div style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#6fba2c;display:inline-block;flex-shrink:0;"></span><strong style="color:#725d42;">ready</strong><span>— API Key 已保存且有默认模型</span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#f7cd67;display:inline-block;flex-shrink:0;"></span><strong style="color:#725d42;">key saved</strong><span>— Key 已存，但未设默认模型</span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#f7cd67;display:inline-block;flex-shrink:0;"></span><strong style="color:#725d42;">models synced</strong><span>— 有模型列表，但未存 Key</span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;flex-shrink:0;"></span><strong style="color:#725d42;">not configured</strong><span>— 尚未配置</span></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="font-weight:700;color:#8a6d4a;margin-bottom:5px;">按钮</div>
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                        <div>★ <strong style="color:#725d42;">星标</strong> — Provider 固定到下拉顶部，保存在本地浏览器</div>
+                        <div>🔗 <strong style="color:#725d42;">Test Connection</strong> — 验证 base_url + API Key 连通性</div>
+                        <div>🤖 <strong style="color:#725d42;">Ask Config Agent</strong> — 推断 base_url、接口兼容性及注意事项（需在 System Settings 中设置）</div>
+                        <div>🔍 <strong style="color:#725d42;">Discover Local Models</strong> — 仅 Ollama：查询本地已安装模型列表</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Modal -->
+    <div class="modal-overlay" id="template-modal">
+        <div class="modal">
+            <h3 id="template-modal-title">Add Template</h3>
+            <input type="hidden" id="template-edit-id">
+            <div class="form-group">
+                <label>ID</label>
+                <input type="text" id="template-id" placeholder="e.g. code_review">
+            </div>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="template-name" placeholder="e.g. 代码审查">
+            </div>
+            <div class="form-group">
+                <label>Match Keywords (comma-separated)</label>
+                <input type="text" id="template-keywords" placeholder="e.g. review, review code">
+            </div>
+            <div class="form-group">
+                <label>Steps (JSON array)</label>
+                <textarea id="template-steps" rows="8" placeholder='[{"order":1,"agent_role":"审查员","action":"审查代码"}]'></textarea>
+                <div class="quick-help" style="font-size:11px;color:var(--animal-text-color-secondary);margin-top:2px;">Each step: order (int), agent_role (str), action (str). Must be valid JSON array.</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeTemplateModal()">Cancel</button>
+                <button class="btn btn-primary" id="template-save-btn" onclick="saveTemplate()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let agentConfig = {};
+        let agentCredentials = {};
+        let providerPresets = {};
+        let catalogModels = {}; // keyed by provider slug, populated on selectProvider
+        let modalKeyLocked = true;
+        let modalKeyVisible = false;
+        let currentSettings = { config_agent: "" };
+
+        function toggleModalKeyLock() {
+            modalKeyLocked = !modalKeyLocked;
+            const inp = document.getElementById("modal-apikey");
+            const lockBtn = document.getElementById("modal-apikey-lock");
+            const lockImg = lockBtn.querySelector("img");
+            if (modalKeyLocked) {
+                inp.disabled = true;
+                lockBtn.classList.remove("toggled");
+                lockImg.src = "/static/icons/lock.svg";
+                lockImg.alt = "locked";
+            } else {
+                inp.disabled = false;
+                lockBtn.classList.add("toggled");
+                lockImg.src = "/static/icons/lock_open.svg";
+                lockImg.alt = "unlocked";
+                inp.focus();
+            }
+        }
+
+        function toggleModalKeyVisible() {
+            modalKeyVisible = !modalKeyVisible;
+            const inp = document.getElementById("modal-apikey");
+            const eyeBtn = document.getElementById("modal-apikey-eye");
+            const eyeImg = eyeBtn.querySelector("img");
+            if (modalKeyVisible) {
+                inp.type = "text";
+                eyeBtn.classList.add("toggled");
+                eyeImg.src = "/static/icons/visibility.svg";
+                eyeImg.alt = "visible";
+            } else {
+                inp.type = "password";
+                eyeBtn.classList.remove("toggled");
+                eyeImg.src = "/static/icons/visibility_off.svg";
+                eyeImg.alt = "hidden";
+            }
+        }
+
+        function resetModalKeyField() {
+            modalKeyLocked = true;
+            modalKeyVisible = false;
+            const inp = document.getElementById("modal-apikey");
+            const lockBtn = document.getElementById("modal-apikey-lock");
+            const lockImg = lockBtn.querySelector("img");
+            const eyeBtn = document.getElementById("modal-apikey-eye");
+            const eyeImg = eyeBtn.querySelector("img");
+            inp.disabled = true;
+            inp.type = "password";
+            lockBtn.classList.remove("toggled");
+            lockImg.src = "/static/icons/lock.svg";
+            lockImg.alt = "locked";
+            eyeBtn.classList.remove("toggled");
+            eyeImg.src = "/static/icons/visibility_off.svg";
+            eyeImg.alt = "hidden";
+        }
+
+        function switchTab(name) {
+            document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+            document.querySelector(`.tab[onclick*="${name}"]`).classList.add("active");
+            document.getElementById(`tab-${name}`).classList.add("active");
+            if (name === "agents") loadAgents();
+            if (name === "templates") loadTemplates();
+            if (name === "permissions") loadPermissions();
+            if (name === "tools") loadTools();
+        }
+
+        function statusBadge(s) {
+            const colors = {ready:'#6fba2c', key_saved:'#f7cd67', models_synced:'#f7cd67', not_configured:'#ccc'};
+            const color = colors[s] || '#ccc';
+            const label = s.replace(/_/g, ' ');
+            return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;">` +
+                   `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></span>${label}</span>`;
+        }
+
+        function agentStatus(cred) {
+            if (!cred) return 'not_configured';
+            const hasKey   = !!(cred.api_key);
+            const hasModel = !!(cred.default_model && cred.default_model !== 'unknown');
+            if (hasKey && hasModel) return 'ready';
+            if (hasKey)            return 'key_saved';
+            if (hasModel)          return 'models_synced';
+            return 'not_configured';
+        }
+
+        function modelTypeBadge(mt) {
+            const colors = {chat:'#6fba2c',reasoning:'#e05a5a',embedding:'#3b82f6',vision:'#a855f7',unknown:'#aaa'};
+            return `<span class="model-type-badge" style="background:${colors[mt]||'#aaa'};color:#fff;">${mt||'--'}</span>`;
+        }
+
+        function showAgentMsg(type, text) {
+            const msg = document.getElementById("agents-msg");
+            msg.className = `msg msg-${type}`;
+            msg.textContent = text;
+        }
+        function showModalMsg(type, text) {
+            const msg = document.getElementById("modal-msg");
+            msg.className = `msg msg-${type}`;
+            msg.textContent = text;
+        }
+        function clearModalMsg() {
+            const msg = document.getElementById("modal-msg");
+            msg.className = "msg";
+            msg.textContent = "";
+        }
+
+        // --- Agents ---
+
+        async function loadAgents() {
+            const msg = document.getElementById("agents-msg");
+            msg.className = "msg";
+            try {
+                const [ar, cr] = await Promise.all([
+                    fetch("/api/config/agents"),
+                    fetch("/api/config/credentials"),
+                ]);
+                const ad = await ar.json();
+                const cd = await cr.json();
+                agentConfig = ad.agents || {};
+                agentCredentials = cd.credentials || {};
+                updateConfigAgentSelect();
+
+                const tbody = document.getElementById("agents-tbody");
+                const keys = Object.keys(agentConfig);
+                if (keys.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty">No agents registered. Add one above.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = keys.map(k => {
+                    const a = agentConfig[k];
+                    const cred = agentCredentials[k];
+                    const rawModel = (cred && cred.default_model) || a.default_model || "";
+                    const defaultModel = (rawModel === "unknown") ? "" : rawModel;
+                    const displayLabel = escapeHtml(a.display_name || k);
+                    return `<tr>
+                        <td><strong>${displayLabel}</strong><br><small style="color:var(--animal-text-color-secondary);font-weight:normal">${k}</small></td>
+                        <td><code>${a.provider}</code></td>
+                        <td>${defaultModel || "—"}</td>
+                        <td>${statusBadge(agentStatus(cred))}</td>
+                        <td class="actions">
+                            <button class="btn btn-ghost btn-sm" onclick="editAgent('${k}')">Edit</button>
+                            <button class="btn btn-test btn-sm" onclick="testAgent('${k}')">Test</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteAgent('${k}')">Delete</button>
+                        </td>
+                    </tr>`;
+                }).join("");
+            } catch(e) {
+                msg.className = "msg msg-error";
+                msg.textContent = "Failed to load agents: " + e;
+            }
+        }
+
+        // --- Providers (loaded from /api/config/providers — OpenRouter + presets) ---
+
+        async function loadProviderPresets() {
+            try {
+                const r = await fetch("/api/config/providers");
+                if (!r.ok) return;
+                const d = await r.json();
+                providerPresets = d.providers || {};
+            } catch(e) {
+                console.error("Failed to load providers:", e);
+            }
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        }
+        function escapeAttr(s) {
+            return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        }
+
+        function getPinnedProviders() {
+            try {
+                return JSON.parse(localStorage.getItem("bb_pinned_providers") || "[]");
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function togglePinProvider(key, event) {
+            event.stopPropagation();
+            const pinned = new Set(getPinnedProviders());
+            if (pinned.has(key)) {
+                pinned.delete(key);
+            } else {
+                pinned.add(key);
+            }
+            localStorage.setItem("bb_pinned_providers", JSON.stringify([...pinned]));
+            const selected = document.getElementById("agent-selected-provider").value;
+            renderProviderDropdown(selected);
+        }
+
+        function getAllProviders() {
+            const merged = { ...providerPresets };
+            // Ensure any provider slug used by registered agents is present (covers custom providers
+            // not in the OpenRouter list), but do NOT add instance names as provider keys.
+            for (const val of Object.values(agentConfig)) {
+                const slug = val.provider;
+                if (slug && !merged[slug]) {
+                    merged[slug] = { display_name: slug, base_url: val.base_url || "", auth_type: "bearer", protected: false };
+                }
+            }
+            return merged;
+        }
+
+        // --- Provider Dropdown ---
+
+        function toggleProviderDropdown() {
+            const menu = document.getElementById("provider-dropdown-menu");
+            const opening = !menu.classList.contains("show");
+            menu.classList.toggle("show");
+            if (opening) {
+                setTimeout(() => {
+                    const s = document.getElementById("provider-search");
+                    if (s) s.focus();
+                }, 30);
+            }
+        }
+
+        function closeProviderDropdown() {
+            document.getElementById("provider-dropdown-menu").classList.remove("show");
+        }
+
+        function renderProviderDropdown(selectedProvider) {
+            const menu = document.getElementById("provider-dropdown-menu");
+            menu.innerHTML = `
+                <div style="padding:6px 8px;border-bottom:1px solid #f0e8d8;background:#fff;">
+                    <input type="text" id="provider-search" placeholder="Search or type a custom name..."
+                        style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:8px;font-size:12px;box-sizing:border-box;outline:none;"
+                        oninput="renderProviderItems(this.value,'${escapeAttr(selectedProvider||'')}')"
+                        onclick="event.stopPropagation()">
+                </div>
+                <div id="provider-items-list"></div>`;
+            renderProviderItems("", selectedProvider);
+
+            const label = document.getElementById("provider-dropdown-label");
+            const all = getAllProviders();
+            if (selectedProvider && all[selectedProvider]) {
+                label.textContent = all[selectedProvider].display_name || selectedProvider;
+            } else if (selectedProvider) {
+                label.textContent = selectedProvider;
+            } else {
+                label.textContent = "Select a provider...";
+            }
+        }
+
+        function renderProviderItems(filter, selectedProvider) {
+            const all = getAllProviders();
+            const pinned = new Set(getPinnedProviders());
+            const q = (filter || "").toLowerCase().trim();
+
+            let keys = Object.keys(all).sort((a, b) => {
+                const ap = pinned.has(a) ? 0 : 1, bp = pinned.has(b) ? 0 : 1;
+                if (ap !== bp) return ap - bp;
+                return a.localeCompare(b);
+            });
+            if (q) keys = keys.filter(k => k.toLowerCase().includes(q) || (all[k].display_name||"").toLowerCase().includes(q));
+
+            let html = keys.map(key => {
+                const a = all[key];
+                const sel = key === selectedProvider ? " selected" : "";
+                const ip = pinned.has(key);
+                return `<div class="dropdown-item${sel}" onclick="selectProvider('${escapeAttr(key)}')">
+                    <div class="provider-option">
+                        <span class="p-name">${escapeHtml(a.display_name || key)}</span>
+                        <span class="p-meta">${escapeHtml(key)}</span>
+                    </div>
+                    <button class="pin-btn${ip?' pinned':''}" onclick="togglePinProvider('${escapeAttr(key)}',event)" title="${ip?'Unpin':'Pin to top'}">
+                        ${ip?'&#9733;':'&#9734;'}
+                    </button>
+                </div>`;
+            }).join("");
+
+            // Custom provider option when query doesn't exactly match any key
+            if (q && !all[q]) {
+                html += `<div class="dropdown-item" style="border-top:1px solid #f0e8d8;" onclick="selectCustomProvider('${escapeAttr(q)}')">
+                    <div class="provider-option">
+                        <span class="p-name" style="color:var(--animal-primary-color)">+ Custom: ${escapeHtml(q)}</span>
+                        <span class="p-meta">Use as custom provider</span>
+                    </div>
+                </div>`;
+            }
+
+            const list = document.getElementById("provider-items-list");
+            if (list) list.innerHTML = html || '<div class="dropdown-item" style="color:#999;pointer-events:none;">No match</div>';
+        }
+
+        function selectCustomProvider(slug) {
+            if (!providerPresets[slug]) {
+                providerPresets[slug] = { display_name: slug, base_url: "", auth_type: "bearer", protected: false };
+            }
+            selectProvider(slug);
+        }
+
+        async function selectProvider(key) {
+            document.getElementById("agent-selected-provider").value = key;
+            renderProviderDropdown(key);
+            closeProviderDropdown();
+
+            const all = getAllProviders();
+            const a = all[key];
+            if (!a) return;
+
+            if (!document.getElementById("agent-display").value.trim()) {
+                document.getElementById("agent-display").value = key;
+            }
+            const defaultUrl = a.base_url || "";
+            document.getElementById("agent-baseurl").value = defaultUrl;
+            _updateBaseUrlHint(defaultUrl);
+
+            // Auto-expand Advanced Settings: always open to show URL (or absence of one)
+            document.getElementById("advanced-settings-details").open = true;
+
+            // When URL is unknown, nudge the user to use Ask Config Agent
+            if (!defaultUrl && currentSettings.config_agent) {
+                showModalMsg("info",
+                    `未找到 ${key} 的 Base URL — 点击「Ask Config Agent」自动查询`);
+            }
+
+            const keyGroup = document.getElementById("modal-apikey-group");
+            keyGroup.style.display = (a.auth_type === "none") ? "none" : "block";
+
+            // Never auto-fill API key — each instance must enter its own key
+            document.getElementById("modal-apikey").value = "";
+            document.getElementById("modal-apikey").placeholder = "sk-...";
+
+            document.getElementById("agent-selected-model").value = "";
+            document.getElementById("model-dropdown-label").textContent = "Loading models...";
+            document.getElementById("model-dropdown-menu").innerHTML =
+                '<div class="dropdown-item" style="color:#999;">Fetching catalog…</div>';
+            clearModalMsg();
+
+            // Show Discover button for Ollama, Ask Config Agent always depends on settings
+            const isOllama = key.toLowerCase().includes("ollama");
+            document.getElementById("modal-btn-discover").style.display = isOllama ? "inline-block" : "none";
+
+            if (isOllama) {
+                document.getElementById("model-dropdown-label").textContent = "Select a model...";
+                document.getElementById("model-dropdown-menu").innerHTML =
+                    '<div class="dropdown-item" style="color:#999;">Click "Discover Local Models" to find installed models</div>';
+            } else {
+                // Fetch catalog from OpenRouter so models are visible immediately (no API key needed)
+                if (catalogModels[key]) {
+                    renderModelDropdown(key, agentCredentials[key]);
+                } else {
+                    document.getElementById("model-dropdown-label").textContent = "Loading models...";
+                    document.getElementById("model-dropdown-menu").innerHTML =
+                        '<div class="dropdown-item" style="color:#999;">Fetching catalog…</div>';
+                    fetch(`/api/config/providers/${encodeURIComponent(key)}/catalog`)
+                        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+                        .then(d => {
+                            catalogModels[key] = { models: d.models || [], source: d.source || "openrouter" };
+                            renderModelDropdown(key, agentCredentials[key]);
+                        })
+                        .catch(() => {
+                            catalogModels[key] = { models: [], source: "error" };
+                            document.getElementById("model-dropdown-menu").innerHTML =
+                                '<div class="dropdown-item" style="color:#999;">无法加载模型列表，请使用 Test Connection</div>';
+                        });
+                }
+            }
+        }
+
+        function _updateBaseUrlHint(defaultUrl) {
+            const btn = document.getElementById("btn-reset-baseurl");
+            const hint = document.getElementById("baseurl-default-hint");
+            if (defaultUrl) {
+                btn.style.display = "inline-block";
+                btn.dataset.defaultUrl = defaultUrl;
+                hint.textContent = `from catalog: ${defaultUrl}`;
+            } else {
+                btn.style.display = "none";
+                btn.dataset.defaultUrl = "";
+                hint.textContent = "";
+            }
+        }
+
+        function resetBaseUrl() {
+            const btn = document.getElementById("btn-reset-baseurl");
+            const url = btn.dataset.defaultUrl || "";
+            document.getElementById("agent-baseurl").value = url;
+        }
+
+        document.addEventListener("click", function(e) {
+            if (!e.target.closest("#provider-dropdown-trigger") && !e.target.closest("#provider-dropdown-menu")) {
+                closeProviderDropdown();
+            }
+            if (!e.target.closest("#model-dropdown-trigger") && !e.target.closest("#model-dropdown-menu")) {
+                closeModelDropdown();
+            }
+        });
+
+        // --- Model Dropdown ---
+
+
+        function toggleModelDropdown() {
+            const menu = document.getElementById("model-dropdown-menu");
+            menu.classList.toggle("show");
+        }
+
+        function closeModelDropdown() {
+            document.getElementById("model-dropdown-menu").classList.remove("show");
+        }
+
+        function renderModelDropdown(providerKey, cred) {
+            const menu = document.getElementById("model-dropdown-menu");
+            const selected = document.getElementById("agent-selected-model").value;
+            let parts = [];
+
+            // Tier 1: Synced — from Test Connection (real provider API)
+            if (cred && cred.models && cred.models.length > 0) {
+                parts.push('<div style="padding:4px 12px;font-size:11px;color:var(--animal-primary-color);font-weight:600;border-bottom:1px solid #f0e8d8;">Synced</div>');
+                parts.push(cred.models.map(m => {
+                    const mid = m.model_id || m;
+                    const sel = mid === selected ? " selected" : "";
+                    const badge = m.model_type ? modelTypeBadge(m.model_type) : '';
+                    return `<div class="dropdown-item${sel}" onclick="selectModel('${escapeAttr(mid)}')">
+                        <div class="model-option-row">
+                            <span class="m-id">${escapeHtml(mid)}</span>
+                            <span class="m-badges">${badge}</span>
+                        </div>
+                    </div>`;
+                }).join(""));
+            }
+
+            // Tier 2: Registry fallback — models stored in registry.yaml for this instance
+            const a = agentConfig[providerKey];
+            if (a && a.models && a.models.length > 0) {
+                if (parts.length) parts.push('<div style="padding:4px 12px;font-size:11px;color:var(--animal-text-color-secondary);font-weight:600;border-bottom:1px solid #f0e8d8;border-top:1px solid #f0e8d8;">Saved</div>');
+                const models = a.models.map(m => typeof m === "string" ? m : m.model_id || "");
+                parts.push(models.map(mid => {
+                    const sel = mid === selected ? " selected" : "";
+                    return `<div class="dropdown-item${sel}" onclick="selectModel('${escapeAttr(mid)}')">
+                        <div class="model-option-row"><span class="m-id">${escapeHtml(mid)}</span></div>
+                    </div>`;
+                }).join(""));
+            }
+
+            // Tier 3: Catalog — OpenRouter or builtin fallback, shown when no synced/saved models yet
+            const catalogEntry = catalogModels[providerKey];
+            const catalogList = catalogEntry ? (catalogEntry.models || catalogEntry) : null;
+            const catalogSource = catalogEntry && catalogEntry.source;
+            if (catalogList && catalogList.length > 0 && parts.length === 0) {
+                const label = catalogSource === "models.dev" ? "Catalog" : catalogSource === "builtin" ? "Known Models" : "Catalog";
+                parts.push(`<div style="padding:4px 12px;font-size:11px;color:var(--animal-text-color-secondary);font-weight:600;border-bottom:1px solid #f0e8d8;">${label}</div>`);
+                parts.push(catalogList.map(m => {
+                    const mid = m.model_id || m;
+                    const sel = mid === selected ? " selected" : "";
+                    const badge = m.model_type ? modelTypeBadge(m.model_type) : '';
+                    return `<div class="dropdown-item${sel}" onclick="selectModel('${escapeAttr(mid)}')">
+                        <div class="model-option-row">
+                            <span class="m-id">${escapeHtml(mid)}</span>
+                            <span class="m-badges">${badge}</span>
+                        </div>
+                    </div>`;
+                }).join(""));
+            }
+
+            if (!parts.length) {
+                menu.innerHTML = '<div class="dropdown-item" style="color:#999;">No models. Test Connection to load.</div>';
+            } else {
+                menu.innerHTML = parts.join("");
+            }
+
+            const label = document.getElementById("model-dropdown-label");
+            if (selected) {
+                label.textContent = selected;
+            } else {
+                label.textContent = "Select a model...";
+            }
+        }
+
+        function selectModel(mid) {
+            document.getElementById("agent-selected-model").value = mid;
+            const providerKey = document.getElementById("agent-selected-provider").value;
+            const instanceKey = document.getElementById("agent-edit-key").value || providerKey;
+            const cred = agentCredentials[instanceKey];
+            renderModelDropdown(instanceKey, cred);
+            closeModelDropdown();
+        }
+
+        // --- Modal open/close ---
+
+        async function openAgentModal(key) {
+            document.getElementById("agent-modal").classList.add("show");
+            resetModalKeyField();
+            clearModalMsg();
+            updateAskConfigAgentBtn();
+            document.getElementById("modal-btn-discover").style.display = "none";
+            if (key) {
+                // --- Edit mode ---
+                document.getElementById("agent-modal-title").textContent = "Edit: " + key;
+                document.getElementById("agent-edit-key").value = key;
+                document.getElementById("agent-save-btn").textContent = "Update";
+                const a = agentConfig[key];
+                const provider = a ? a.provider : "";
+                document.getElementById("agent-selected-provider").value = provider;
+                document.getElementById("agent-display").value = (a && a.display_name) || key;
+                const agentDefaultUrl = (a && a.base_url) || "";
+                document.getElementById("agent-baseurl").value = agentDefaultUrl;
+                _updateBaseUrlHint(agentDefaultUrl);
+                const cred = agentCredentials[key];
+                document.getElementById("modal-apikey").value = "";
+                document.getElementById("modal-apikey").placeholder =
+                    (cred && cred.api_key) ? "API key saved — leave blank to keep" : "sk-...";
+                if (cred) {
+                    if (cred.base_url_override) {
+                        document.getElementById("agent-baseurl").value = cred.base_url_override;
+                    }
+                    document.getElementById("agent-selected-model").value = cred.default_model || "";
+                } else {
+                    document.getElementById("agent-selected-model").value = "";
+                }
+                document.getElementById("modal-apikey-group").style.display = (a && a.auth_type === "none") ? "none" : "block";
+                renderProviderDropdown(provider);
+                renderModelDropdown(key, cred);
+                if (!cred || !cred.models || cred.models.length === 0) {
+                    document.getElementById("model-dropdown-menu").innerHTML =
+                        '<div class="dropdown-item" style="color:#999;">点击 Test Connection 获取最新模型列表</div>';
+                }
+            } else {
+                // --- Add mode ---
+                document.getElementById("agent-modal-title").textContent = "Add Agent";
+                document.getElementById("agent-edit-key").value = "";
+                document.getElementById("agent-selected-provider").value = "";
+                document.getElementById("agent-selected-model").value = "";
+                document.getElementById("agent-display").value = "";
+                document.getElementById("modal-apikey").value = "";
+                document.getElementById("agent-baseurl").value = "";
+                _updateBaseUrlHint("");
+                document.getElementById("advanced-settings-details").open = false;
+                document.getElementById("modal-apikey-group").style.display = "block";
+                document.getElementById("model-dropdown-menu").innerHTML = '<div class="dropdown-item" style="color:#999;">Select a provider first</div>';
+                document.getElementById("model-dropdown-label").textContent = "Select a model...";
+                renderProviderDropdown("");
+                document.getElementById("agent-save-btn").textContent = "Save";
+            }
+        }
+
+        function closeAgentModal() {
+            document.getElementById("agent-modal").classList.remove("show");
+            resetModalKeyField();
+        }
+
+        // --- Save ---
+
+        async function saveAgent() {
+            const editKey = document.getElementById("agent-edit-key").value;
+            const provider = document.getElementById("agent-selected-provider").value;
+            if (!provider) { showModalMsg("error", "Please select a provider"); return; }
+
+            const allProviders = getAllProviders();
+            const instanceName = document.getElementById("agent-display").value.trim();
+            if (!instanceName) { showModalMsg("error", "请填写实例名"); return; }
+            const apiKey = document.getElementById("modal-apikey").value.trim();
+            const baseUrl = document.getElementById("agent-baseurl").value.trim();
+            const modelId = document.getElementById("agent-selected-model").value;
+
+            const nameKey = editKey || instanceName;
+
+            showModalMsg("success", "Saving...");
+
+            // 1. Save registry entry first (agent must exist before set-key / default-model)
+            try {
+                const preset = allProviders[provider] || {};
+                const body = {
+                    name: nameKey,
+                    provider: provider,
+                    display_name: instanceName,
+                    api_key_env: preset.api_key_env || "",
+                    base_url: baseUrl || preset.base_url || "",
+                    models: preset.models || [],
+                };
+                let r;
+                if (editKey) {
+                    r = await fetch(`/api/config/agents/${encodeURIComponent(editKey)}`, {
+                        method: "PATCH",
+                        headers: {"Content-Type":"application/json"},
+                        body: JSON.stringify(body),
+                    });
+                } else {
+                    r = await fetch("/api/config/agents", {
+                        method: "POST",
+                        headers: {"Content-Type":"application/json"},
+                        body: JSON.stringify(body),
+                    });
+                }
+                const d = await r.json();
+                if (!r.ok) {
+                    showModalMsg("error", d.detail || "Failed to save agent");
+                    return;
+                }
+            } catch(e) {
+                showModalMsg("error", "Error saving agent: " + e);
+                return;
+            }
+
+            // 2. Save credential (agent now exists in registry)
+            if (apiKey) {
+                try {
+                    const r = await fetch(`/api/config/agents/${encodeURIComponent(nameKey)}/set-key`, {
+                        method: "POST",
+                        headers: {"Content-Type":"application/json"},
+                        body: JSON.stringify({api_key: apiKey, base_url_override: baseUrl}),
+                    });
+                    if (!r.ok) {
+                        const d = await r.json();
+                        showModalMsg("error", d.detail || "Failed to save key");
+                        return;
+                    }
+                } catch(e) {
+                    showModalMsg("error", "Error saving key: " + e);
+                    return;
+                }
+            }
+
+            // 3. Sync models automatically
+            showModalMsg("success", "Syncing models...");
+            let syncedModels = [];
+            try {
+                const sr = await fetch(`/api/config/agents/${encodeURIComponent(nameKey)}/sync-models`, {method: "POST"});
+                if (sr.ok) syncedModels = await sr.json();
+            } catch(e) { console.error("Sync error:", e); }
+
+            // 4. Set default model: prefer user selection, fall back to first synced model
+            const finalModel = modelId || (syncedModels.length > 0 ? (syncedModels[0].model_id || syncedModels[0]) : "");
+            if (finalModel) {
+                try {
+                    await fetch(`/api/config/agents/${encodeURIComponent(nameKey)}/default-model`, {
+                        method: "POST",
+                        headers: {"Content-Type":"application/json"},
+                        body: JSON.stringify({model_id: finalModel}),
+                    });
+                } catch(e) { console.error("Error setting default model:", e); }
+            }
+
+            const verb = editKey ? "updated" : "added";
+            const syncInfo = syncedModels.length > 0 ? `，同步 ${syncedModels.length} 个模型` : "";
+            showAgentMsg("success", `Agent "${nameKey}" ${verb}${syncInfo}.`);
+            closeAgentModal();
+            await loadAgents();
+        }
+
+        function editAgent(key) { openAgentModal(key); }
+
+        async function deleteAgent(key) {
+            if (!confirm(`Delete agent "${key}" and its credentials?`)) return;
+            try {
+                // Backend atomically removes registry entry + credential (if no other instance shares the provider)
+                const r = await fetch(`/api/config/agents/${encodeURIComponent(key)}`, {method:"DELETE"});
+                if (r.ok) {
+                    showAgentMsg("success", `Agent "${key}" removed.`);
+                    loadAgents();
+                } else {
+                    const err = await r.json().catch(() => ({detail: `HTTP ${r.status}`}));
+                    showAgentMsg("error", `Cannot delete "${key}": ${err.detail || r.status}`);
+                }
+            } catch(e) {
+                showAgentMsg("error", "Delete failed: " + e);
+            }
+        }
+
+        // --- Shared: ensure agent exists in registry ---
+
+        async function ensureAgentExists(key) {
+            if (agentConfig[key]) return true;
+            const all = getAllProviders();
+            const preset = all[key];
+            if (!preset) return false;
+            try {
+                await fetch("/api/config/agents", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        name: key,
+                        provider: key,
+                        display_name: preset.display_name || key,
+                        api_key_env: "",
+                        base_url: preset.base_url || "",
+                        models: [],
+                    }),
+                });
+                const ar = await fetch("/api/config/agents");
+                const ad = await ar.json();
+                agentConfig = ad.agents || {};
+                return true;
+            } catch(e) { return false; }
+        }
+
+        // --- Test / Sync from table row ---
+
+        async function testAgent(key) {
+            showAgentMsg("success", `Testing ${key}...`);
+            if (!(await ensureAgentExists(key))) { showAgentMsg("error", `${key}: not registered`); return; }
+            try {
+                const r = await fetch(`/api/config/agents/${encodeURIComponent(key)}/test`, {method:"POST"});
+                const d = await r.json();
+                if (d.ok) showAgentMsg("success", `${key}: Connection OK`);
+                else showAgentMsg("error", `${key}: ${d.message}`);
+            } catch(e) { showAgentMsg("error", `${key}: ${e}`); }
+        }
+
+        async function syncAgent(key) {
+            showAgentMsg("success", `Syncing ${key}...`);
+            if (!(await ensureAgentExists(key))) { showAgentMsg("error", `${key}: not registered`); return; }
+            try {
+                const r = await fetch(`/api/config/agents/${encodeURIComponent(key)}/sync-models`, {method:"POST"});
+                const d = await r.json();
+                if (r.ok) {
+                    await loadAgents();
+                    // loadAgents reloads credentials from server; if no FERNET_KEY, models won't
+                    // be persisted — patch agentCredentials in-memory so the dropdown still works
+                    if (d.length > 0 && (!agentCredentials[key] || !agentCredentials[key].models?.length)) {
+                        agentCredentials[key] = agentCredentials[key] || {};
+                        agentCredentials[key].models = d;
+                    }
+                    showAgentMsg("success", `${key}: Synced ${d.length} models`);
+                } else {
+                    showAgentMsg("error", d.detail || "Sync failed");
+                }
+            } catch(e) { showAgentMsg("error", `${key}: ${e}`); }
+        }
+
+        // --- Test / Sync from modal ---
+
+        function _applyModelList(models, instanceKey) {
+            if (!models || models.length === 0) return;
+            agentCredentials[instanceKey] = agentCredentials[instanceKey] || {};
+            agentCredentials[instanceKey].models = models;
+            renderModelDropdown(instanceKey, agentCredentials[instanceKey]);
+        }
+
+        async function testAgentConnection() {
+            const baseUrl = document.getElementById("agent-baseurl").value.trim();
+            if (!baseUrl) { showModalMsg("error", "请先填写 Base URL"); return; }
+            clearModalMsg();
+            const editKey = document.getElementById("agent-edit-key").value;
+            const provKey = document.getElementById("agent-selected-provider").value;
+            const instKey = editKey || provKey;
+            let apiKey = document.getElementById("modal-apikey").value.trim();
+            const btn = document.getElementById("modal-btn-test");
+            btn.textContent = "Testing..."; btn.disabled = true;
+
+            if (!apiKey && editKey) {
+                // Edit mode, blank field — use stored key via per-agent test endpoint
+                try {
+                    const r = await fetch(`/api/config/agents/${encodeURIComponent(editKey)}/test`, {method:"POST"});
+                    const d = await r.json();
+                    showModalMsg(d.ok ? "success" : "error",
+                        (d.ok ? "Connection OK" : (d.message || "Connection failed")) +
+                        (d.endpoint ? `  →  ${d.endpoint}` : ""));
+                } catch(e) { showModalMsg("error", "Error: " + e); }
+                btn.textContent = "Test Connection"; btn.disabled = false;
+                return;
+            }
+
+            // Add mode or new key entered: test with form values
+            const model = document.getElementById("agent-selected-model").value.trim() || undefined;
+            try {
+                const r = await fetch("/api/config/test-connection", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({api_key: apiKey || undefined, base_url: baseUrl, model}),
+                });
+                const d = await r.json();
+                showModalMsg(d.ok ? "success" : "error",
+                    (d.message || (d.ok ? "Connection OK" : "Connection failed")) +
+                    (d.endpoint ? `  →  ${d.endpoint}` : ""));
+            } catch(e) { showModalMsg("error", "Error: " + e); }
+            btn.textContent = "Test Connection"; btn.disabled = false;
+        }
+
+        // --- Templates ---
+
+        async function loadTemplates() {
+            const msg = document.getElementById("templates-msg");
+            msg.className = "msg";
+            try {
+                const r = await fetch("/api/config/templates");
+                const data = await r.json();
+                const list = document.getElementById("templates-list");
+                const templates = data.templates || [];
+                if (templates.length === 0) {
+                    list.innerHTML = '<div class="empty">No templates. Add one above.</div>';
+                    return;
+                }
+                list.innerHTML = templates.map(t => `
+                    <div class="card" style="margin-bottom:12px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <strong>${t.name}</strong> <code>(${t.id})</code>
+                                <div style="font-size:12px;color:var(--animal-text-color-secondary);margin-top:4px;">
+                                    Keywords: ${(t.match_keywords||[]).map(k=>`<span class="tag">${k}</span>`).join(" ")}
+                                </div>
+                                <div style="font-size:12px;margin-top:4px;">
+                                    ${(t.steps||[]).length} steps: ${t.steps.map(s=>`${s.agent_role} -> ${s.action}`).join(", ")}
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button class="btn btn-ghost btn-sm" onclick="editTemplate('${t.id}')">Edit</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteTemplate('${t.id}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join("");
+            } catch(e) {
+                msg.className = "msg msg-error";
+                msg.textContent = "Failed to load templates: " + e;
+            }
+        }
+
+        function openTemplateModal(id) {
+            document.getElementById("template-modal").classList.add("show");
+            if (id) {
+                document.getElementById("template-modal-title").textContent = "Edit Template: " + id;
+                document.getElementById("template-edit-id").value = id;
+                document.getElementById("template-save-btn").textContent = "Update";
+                fetch(`/api/config/templates`).then(r=>r.json()).then(data=>{
+                    const t = (data.templates||[]).find(t=>t.id===id);
+                    if (t) {
+                        document.getElementById("template-id").value = t.id;
+                        document.getElementById("template-id").disabled = true;
+                        document.getElementById("template-name").value = t.name;
+                        document.getElementById("template-keywords").value = (t.match_keywords||[]).join(", ");
+                        document.getElementById("template-steps").value = JSON.stringify(t.steps||[], null, 2);
+                    }
+                });
+            } else {
+                document.getElementById("template-modal-title").textContent = "Add Template";
+                document.getElementById("template-edit-id").value = "";
+                document.getElementById("template-id").value = "";
+                document.getElementById("template-id").disabled = false;
+                document.getElementById("template-name").value = "";
+                document.getElementById("template-keywords").value = "";
+                document.getElementById("template-steps").value = "";
+                document.getElementById("template-save-btn").textContent = "Save";
+            }
+        }
+
+        function closeTemplateModal() { document.getElementById("template-modal").classList.remove("show"); }
+
+        async function saveTemplate() {
+            const editId = document.getElementById("template-edit-id").value;
+            const msg = document.getElementById("templates-msg");
+            let steps;
+            try { steps = JSON.parse(document.getElementById("template-steps").value); }
+            catch(e) { alert("Steps must be valid JSON array"); return; }
+            const body = {
+                id: document.getElementById("template-id").value.trim(),
+                name: document.getElementById("template-name").value.trim(),
+                match_keywords: document.getElementById("template-keywords").value.split(",").map(s=>s.trim()).filter(Boolean),
+                steps: steps,
+            };
+            if (!body.id || !body.name) { alert("ID and Name are required"); return; }
+            try {
+                let r;
+                if (editId) {
+                    r = await fetch(`/api/config/templates/${encodeURIComponent(editId)}`, {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+                } else {
+                    r = await fetch("/api/config/templates", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+                }
+                const d = await r.json();
+                if (r.ok) {
+                    msg.className = "msg msg-success";
+                    msg.textContent = editId ? `Template "${body.id}" updated.` : `Template "${body.id}" added.`;
+                    closeTemplateModal();
+                    loadTemplates();
+                } else { msg.className = "msg msg-error"; msg.textContent = d.detail || "Failed"; }
+            } catch(e) { msg.className = "msg msg-error"; msg.textContent = "Error: " + e; }
+        }
+
+        function editTemplate(id) { openTemplateModal(id); }
+
+        async function deleteTemplate(id) {
+            if (!confirm(`Delete template "${id}"?`)) return;
+            const msg = document.getElementById("templates-msg");
+            try {
+                const r = await fetch(`/api/config/templates/${encodeURIComponent(id)}`, {method:"DELETE"});
+                if (r.ok) { msg.className = "msg msg-success"; msg.textContent = `Template "${id}" removed.`; loadTemplates(); }
+            } catch(e) { msg.className = "msg msg-error"; msg.textContent = "Error: " + e; }
+        }
+
+        // --- Loaded Tools ---
+        async function loadTools() {
+            const msg = document.getElementById("tools-msg");
+            msg.className = "msg";
+            try {
+                const r = await fetch("/api/config/tools");
+                const data = await r.json();
+                const list = document.getElementById("tools-list");
+                const tools = data.tools || {};
+                const keys = Object.keys(tools);
+                if (keys.length === 0) {
+                    list.innerHTML = '<div class="empty">No tools loaded.</div>';
+                    return;
+                }
+                list.innerHTML = keys.map(k => {
+                    const t = tools[k];
+                    const params = (t.parameters || []).map(p => {
+                        const req = p.required ? '<span style="color:#e05a5a;font-weight:700;">*</span>' : '';
+                        return `<span class="tag">${p.name}${req}: ${p.type}</span>`;
+                    }).join(" ");
+                    const handler = t.handler || "";
+                    const handlerParts = handler.split(".");
+                    const handlerIcon = handlerParts[0] === "filesystem" ? "📁" : handlerParts[0] === "sandbox" ? "🔒" : handlerParts[0] === "network" ? "🌐" : handlerParts[0] === "search" ? "🔍" : "🔧";
+                    return `
+                    <div class="card" style="margin-bottom:12px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <strong>${handlerIcon} ${t.name}</strong> <code>(${k})</code>
+                                <span class="tag">${t.operation_type}</span>
+                                <div style="font-size:12px;color:var(--animal-text-color-secondary);margin-top:4px;">${t.description}</div>
+                                <div style="margin-top:4px;">${params}</div>
+                                <div style="font-size:11px;color:var(--animal-text-color-secondary);margin-top:4px;">Handler: ${handler}</div>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join("");
+            } catch(e) {
+                msg.className = "msg msg-error";
+                msg.textContent = "Failed to load tools: " + e;
+            }
+        }
+
+        // --- Permissions ---
+        async function loadPermissions() {
+            try {
+                const r = await fetch("/api/config/permissions/presets");
+                const data = await r.json();
+                const tbody = document.getElementById("perms-tbody");
+                const presets = data.presets || {};
+                const keys = Object.keys(presets);
+                if (keys.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="empty">No presets found.</td></tr>'; return; }
+                function badge(v) {
+                    const colors = {allowed:'#6fba2c',require_approval:'#f7cd67',denied:'#e05a5a'};
+                    return `<span style="display:inline-block;background:${colors[v]||'#ccc'};color:#fff;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;">${v}</span>`;
+                }
+                tbody.innerHTML = keys.map(k => {
+                    const p = presets[k];
+                    const ops = p.default_operations || {};
+                    return `<tr><td><strong>${k}</strong></td><td>${p.description||""}</td>
+                        <td>${badge(ops.chat)}</td><td>${badge(ops.analyze)}</td><td>${badge(ops.search)}</td>
+                        <td>${badge(ops.execute_code)}</td><td>${badge(ops.http_request)}</td>
+                        <td>${badge(ops.file_read)}</td><td>${badge(ops.file_write)}</td><td>${badge(ops.file_delete)}</td></tr>`;
+                }).join("");
+            } catch(e) { document.getElementById("perms-tbody").innerHTML = '<tr><td colspan="10" class="empty">Error: ' + e + '</td></tr>'; }
+        }
+
+        // --- System Settings ---
+
+        function updateConfigAgentSelect() {
+            const sel = document.getElementById("config-agent-select");
+            if (!sel) return;
+            const current = currentSettings.config_agent || "";
+            const keys = Object.keys(agentConfig);
+            sel.innerHTML = '<option value="">（不使用 Config Agent）</option>' +
+                keys.map(k => `<option value="${escapeHtml(k)}"${k === current ? " selected" : ""}>${escapeHtml(k)}</option>`).join("");
+        }
+
+        function updateAskConfigAgentBtn() {
+            const btn = document.getElementById("modal-btn-ask-agent");
+            if (btn) btn.style.display = currentSettings.config_agent ? "inline-block" : "none";
+        }
+
+        async function loadSettings() {
+            try {
+                const r = await fetch("/api/config/settings");
+                if (r.ok) {
+                    currentSettings = await r.json();
+                    updateConfigAgentSelect();
+                }
+            } catch(e) { console.error("Failed to load settings:", e); }
+        }
+
+        async function saveConfigAgent() {
+            const val = document.getElementById("config-agent-select").value;
+            const msg = document.getElementById("settings-msg");
+            try {
+                const r = await fetch("/api/config/settings", {
+                    method: "PATCH",
+                    headers: {"Content-Type":"application/json"},
+                    body: JSON.stringify({config_agent: val || null}),
+                });
+                if (r.ok) {
+                    currentSettings.config_agent = val;
+                    msg.className = "msg msg-success";
+                    msg.textContent = val ? `Config Agent 已设为 "${val}"` : "Config Agent 已清空";
+                    updateAskConfigAgentBtn();
+                    setTimeout(() => { msg.className = "msg"; msg.textContent = ""; }, 3000);
+                } else {
+                    const d = await r.json();
+                    msg.className = "msg msg-error";
+                    msg.textContent = d.detail || "保存失败";
+                }
+            } catch(e) {
+                msg.className = "msg msg-error";
+                msg.textContent = "Error: " + e;
+            }
+        }
+
+        async function askConfigAgent() {
+            const slug = document.getElementById("agent-selected-provider").value;
+            if (!slug) { showModalMsg("error", "请先选择 Provider"); return; }
+            const btn = document.getElementById("modal-btn-ask-agent");
+            btn.textContent = "Asking..."; btn.disabled = true;
+            clearModalMsg();
+            try {
+                const r = await fetch(`/api/config/providers/${encodeURIComponent(slug)}/ask-config`, {method:"POST"});
+                const d = await r.json();
+                if (!r.ok) { showModalMsg("error", d.detail || "Config Agent 请求失败"); btn.textContent = "Ask Config Agent"; btn.disabled = false; return; }
+
+                // Auto-fill base_url and open Advanced Settings
+                if (d.base_url) {
+                    document.getElementById("agent-baseurl").value = d.base_url;
+                    _updateBaseUrlHint(d.base_url);
+                    document.getElementById("advanced-settings-details").open = true;
+                }
+
+                // Build a readable summary for the user
+                const compat = d.openai_compatible === false
+                    ? "⚠️ 非 OpenAI 兼容接口"
+                    : "✅ OpenAI 兼容接口";
+                const authNote = (d.auth_header && d.auth_header !== "Authorization")
+                    ? `，鉴权 Header: ${d.auth_header}`
+                    : "";
+                const urlLine = d.base_url ? `base_url: ${d.base_url}` : "（未获取到 base_url）";
+                const notesLine = d.notes ? `\n${d.notes}` : "";
+                showModalMsg(d.openai_compatible === false ? "error" : "success",
+                    `${compat}${authNote}\n${urlLine}${notesLine}`);
+            } catch(e) { showModalMsg("error", "Error: " + e); }
+            btn.textContent = "Ask Config Agent"; btn.disabled = false;
+        }
+
+        async function discoverOllamaModels() {
+            const rawUrl = document.getElementById("agent-baseurl").value.trim() || "http://localhost:11434/v1";
+            const btn = document.getElementById("modal-btn-discover");
+            btn.textContent = "Discovering..."; btn.disabled = true;
+            clearModalMsg();
+            try {
+                const base = rawUrl.replace(/\/v1\/?$/, "");
+                const r = await fetch(`${base}/api/tags`);
+                if (r.ok) {
+                    const d = await r.json();
+                    const models = (d.models || []).map(m => ({
+                        model_id: m.name,
+                        display_name: m.name,
+                        model_type: "chat",
+                    }));
+                    if (models.length > 0) {
+                        const provKey = document.getElementById("agent-selected-provider").value;
+                        const instKey = document.getElementById("agent-edit-key").value || provKey;
+                        agentCredentials[instKey] = agentCredentials[instKey] || {};
+                        agentCredentials[instKey].models = models;
+                        renderModelDropdown(instKey, agentCredentials[instKey]);
+                        showModalMsg("success", `发现 ${models.length} 个本地 Ollama 模型`);
+                    } else {
+                        showModalMsg("error", "未找到已安装模型，请确认 Ollama 已运行");
+                    }
+                } else {
+                    showModalMsg("error", `无法连接 Ollama (${base}/api/tags)`);
+                }
+            } catch(e) { showModalMsg("error", `无法访问 Ollama: ${e.message || e}`); }
+            btn.textContent = "Discover Local Models"; btn.disabled = false;
+        }
+
+        Promise.all([loadProviderPresets(), loadAgents(), loadSettings()]);
+    </script>
+
+
+</body>
+</html>

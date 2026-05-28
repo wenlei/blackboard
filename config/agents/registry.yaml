@@ -1,0 +1,34 @@
+agents:
+  config_agent:
+    provider: deepseek
+    display_name: config_agent
+    api_key_env: ''
+    base_url: https://api.deepseek.com/v1
+    default_model: ''
+    models: []
+    api_type: openai_compatible
+    models_path: /models
+    auth_type: bearer
+    default_template: config_assistant
+  deepseek:
+    provider: deepseek
+    display_name: deepseek-bot
+    api_key_env: ''
+    base_url: https://api.deepseek.com
+    default_model: ''
+    models: []
+    api_type: openai_compatible
+    models_path: /models
+    auth_type: bearer
+    default_template: general
+  xiaomi-bot:
+    provider: xiaomi-token-plan-cn
+    display_name: xiaomi-bot
+    api_key_env: ''
+    base_url: https://token-plan-cn.xiaomimimo.com/v1
+    default_model: ''
+    models: []
+    api_type: openai_compatible
+    models_path: /models
+    auth_type: bearer
+    default_template: general

@@ -1,0 +1,85 @@
+tools:
+  read_file:
+    name: "读取文件"
+    description: "读取指定路径的文件内容"
+    operation_type: "file_read"
+    parameters:
+      - name: path
+        type: string
+        description: "文件路径（相对于沙箱目录）"
+        required: true
+    handler: "filesystem.read"
+
+  write_file:
+    name: "写入文件"
+    description: "将内容写入指定路径的文件"
+    operation_type: "file_write"
+    parameters:
+      - name: path
+        type: string
+        description: "文件路径（相对于沙箱目录）"
+        required: true
+      - name: content
+        type: string
+        description: "要写入的内容"
+        required: true
+    handler: "filesystem.write"
+
+  execute_python:
+    name: "执行 Python 代码"
+    description: "在沙箱环境中执行 Python 代码"
+    operation_type: "execute_code"
+    parameters:
+      - name: code
+        type: string
+        description: "Python 代码"
+        required: true
+    handler: "sandbox.python"
+
+  execute_shell:
+    name: "执行 Shell 命令"
+    description: "在沙箱中执行 Shell 命令"
+    operation_type: "execute_code"
+    parameters:
+      - name: command
+        type: string
+        description: "Shell 命令"
+        required: true
+    handler: "sandbox.shell"
+
+  http_get:
+    name: "HTTP GET 请求"
+    description: "发起 HTTP GET 请求获取远程资源"
+    operation_type: "http_request"
+    parameters:
+      - name: url
+        type: string
+        description: "请求 URL"
+        required: true
+    handler: "network.http_get"
+
+  http_post:
+    name: "HTTP POST 请求"
+    description: "发起 HTTP POST 请求"
+    operation_type: "http_request"
+    parameters:
+      - name: url
+        type: string
+        description: "请求 URL"
+        required: true
+      - name: body
+        type: object
+        description: "请求体 (JSON)"
+        required: false
+    handler: "network.http_post"
+
+  web_search:
+    name: "网络搜索"
+    description: "通过搜索引擎检索信息"
+    operation_type: "search"
+    parameters:
+      - name: query
+        type: string
+        description: "搜索关键词"
+        required: true
+    handler: "search.web"

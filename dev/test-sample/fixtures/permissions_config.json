@@ -1,0 +1,43 @@
+{
+  "modes": {
+    "whitelist": {
+      "description": "仅声明的操作可用，未声明 = denied",
+      "use_case": "生产环境，明确权限边界"
+    },
+    "approval_first": {
+      "description": "所有操作需先确认",
+      "use_case": "调试/教学环境，逐步确认"
+    },
+    "open": {
+      "description": "全部开放（仅 denied 拦截）",
+      "use_case": "信任场景，快速执行"
+    }
+  },
+  "default_config": {
+    "mode": "whitelist",
+    "operations": {
+      "chat": "allowed",
+      "analyze": "allowed",
+      "search": "allowed",
+      "execute_code": "require_approval",
+      "http_request": "require_approval",
+      "file_read": "allowed",
+      "file_write": "require_approval",
+      "file_delete": "denied"
+    },
+    "approval_timeout_seconds": 300,
+    "description": "默认白名单模式，危险操作需用户审批"
+  },
+  "per_agent_overrides": {
+    "description": "按 Agent 单独覆盖权限（可选扩展功能）",
+    "example": {
+      "architect": {
+        "file_write": "require_approval"
+      },
+      "programmer": {
+        "file_write": "require_approval",
+        "execute_code": "allowed"
+      }
+    }
+  }
+}

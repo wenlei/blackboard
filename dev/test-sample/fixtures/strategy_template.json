@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "code_review",
+      "name": "代码审查工作流",
+      "match_keywords": ["代码", "审查", "review", "PR", "代码质量"],
+      "steps": [
+        {"order": 1, "agent": "architect", "action": "分析代码结构，输出架构层面的问题"},
+        {"order": 2, "agent": "reviewer", "action": "审查代码风格、逻辑正确性、错误处理"},
+        {"order": 3, "agent": "programmer", "action": "根据审查意见提出修改建议"}
+      ]
+    },
+    {
+      "id": "write_code",
+      "name": "协作编码",
+      "match_keywords": ["写", "实现", "开发", "build", "code", "函数"],
+      "steps": [
+        {"order": 1, "agent": "architect", "action": "设计实现方案（模块划分、API 设计、数据结构）"},
+        {"order": 2, "agent": "programmer", "action": "根据方案编写代码"},
+        {"order": 3, "agent": "reviewer", "action": "审查代码并给出改进意见"},
+        {"order": 4, "agent": "programmer", "action": "根据审查意见修改代码"}
+      ]
+    },
+    {
+      "id": "analyze",
+      "name": "分析讨论",
+      "match_keywords": ["分析", "解释", "为什么", "怎么看", "分析一下"],
+      "steps": [
+        {"order": 1, "agent": "architect", "action": "从高层角度分析问题"},
+        {"order": 2, "agent": "reviewer", "action": "补充细节和不同视角"},
+        {"order": 3, "agent": "architect", "action": "综合各方观点，输出最终分析"}
+      ]
+    },
+    {
+      "id": "general",
+      "name": "通用问答",
+      "match_keywords": [],
+      "steps": [
+        {"order": 1, "agent": "auto", "action": "由 Host LLM 决定使用哪个 Agent，或直接回复"}
+      ]
+    }
+  ],
+  "llm_augmentation": {
+    "enabled": true,
+    "prompt": "你是一个工作流策略生成器。根据用户的需求和以下 Agent 角色列表，补充或调整策略模板的具体步骤。Agent 角色：{agent_roles}。用户需求：{user_input}。当前匹配的模板：{matched_template}。请以 JSON 格式输出调整后的步骤。"
+  }
+}

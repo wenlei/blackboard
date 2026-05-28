@@ -1,0 +1,68 @@
+templates:
+  - id: "code_review"
+    name: "代码审查"
+    match_keywords:
+      - "代码"
+      - "审查"
+      - "review"
+      - "PR"
+      - "代码质量"
+    steps:
+      - order: 1
+        agent_role: "architect"
+        action: "分析代码结构，输出架构层面的问题"
+      - order: 2
+        agent_role: "reviewer"
+        action: "审查代码风格、逻辑正确性、错误处理"
+      - order: 3
+        agent_role: "programmer"
+        action: "根据审查意见提出修改建议"
+
+  - id: "write_code"
+    name: "协作编码"
+    match_keywords:
+      - "写"
+      - "实现"
+      - "开发"
+      - "build"
+      - "code"
+      - "函数"
+    steps:
+      - order: 1
+        agent_role: "architect"
+        action: "设计实现方案（模块划分、API 设计、数据结构）"
+      - order: 2
+        agent_role: "programmer"
+        action: "根据方案编写代码"
+      - order: 3
+        agent_role: "reviewer"
+        action: "审查代码并给出改进意见"
+      - order: 4
+        agent_role: "programmer"
+        action: "根据审查意见修改代码"
+
+  - id: "analyze"
+    name: "分析讨论"
+    match_keywords:
+      - "分析"
+      - "解释"
+      - "为什么"
+      - "怎么看"
+    steps:
+      - order: 1
+        agent_role: "architect"
+        action: "从高层角度分析问题"
+      - order: 2
+        agent_role: "reviewer"
+        action: "补充细节和不同视角"
+      - order: 3
+        agent_role: "architect"
+        action: "综合各方观点，输出最终分析"
+
+  - id: "general"
+    name: "通用问答"
+    match_keywords: []
+    steps:
+      - order: 1
+        agent_role: "auto"
+        action: "由 Host LLM 决定使用哪个 Agent，或直接回复"

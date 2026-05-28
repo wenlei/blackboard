@@ -1,0 +1,38 @@
+presets:
+  whitelist:
+    description: "仅声明的操作可用，未声明=denied"
+    default_operations:
+      chat: "allowed"
+      analyze: "allowed"
+      search: "allowed"
+      execute_code: "require_approval"
+      http_request: "require_approval"
+      file_read: "allowed"
+      file_write: "require_approval"
+      file_delete: "denied"
+
+  approval_first:
+    description: "所有操作需先确认，适合调试/教学"
+    default_operations:
+      chat: "require_approval"
+      analyze: "require_approval"
+      search: "require_approval"
+      execute_code: "require_approval"
+      http_request: "require_approval"
+      file_read: "require_approval"
+      file_write: "require_approval"
+      file_delete: "require_approval"
+
+  open:
+    description: "全部开放，仅 denied 拦截"
+    default_operations:
+      chat: "allowed"
+      analyze: "allowed"
+      search: "allowed"
+      execute_code: "allowed"
+      http_request: "allowed"
+      file_read: "allowed"
+      file_write: "allowed"
+      file_delete: "denied"
+
+approval_timeout_seconds: 300
